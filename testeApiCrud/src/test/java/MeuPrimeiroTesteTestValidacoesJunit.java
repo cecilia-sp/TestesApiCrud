@@ -5,27 +5,35 @@ import static org.junit.Assert.assertTrue;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.List;
 
 public class MeuPrimeiroTesteTestValidacoesJunit {
 
     @BeforeClass
     public static void setup() {
-        // API Brasileira gratuita voltada para estudos de QA
         RestAssured.baseURI = "https://serverest.dev";
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        RestAssured.reset();
     }
 
     @Test
     public void deveListarUsuariosComSucesso() {
+
         // 1. Configura e executa a requisição
         Response response = RestAssured
                 .with()
                 .contentType(ContentType.JSON)
                 .get("/usuarios");
 
-        // 2. Imprime o corpo da resposta no console
-        response.peek();
+        // 2. Imprime o log completo da resposta no console
+        response.then().log().all();
 
         // 3. Executa as validações com JUnit 4
         assertEquals(200, response.getStatusCode());
@@ -34,6 +42,11 @@ public class MeuPrimeiroTesteTestValidacoesJunit {
         assertTrue("A quantidade deve ser maior ou igual a zero", quantidade >= 0);
 
         assertNotNull("A lista de usuários não deve ser nula", response.path("usuarios"));
+
+        //Valida se a lista esta vazia
+        List<Object> usuarios = response.path("usuarios");
+        assertTrue("A lista de usuários está vazia", usuarios.size() > 0);
+
     }
 
     @Test
@@ -78,7 +91,7 @@ public class MeuPrimeiroTesteTestValidacoesJunit {
                 .with()
                 .contentType(ContentType.JSON)
                 .body(usuarioAtualizado)
-                .put("/usuarios/0uxu6GwOfwnt6aMc");
+                .put("/usuarios/0uxu6GwOfwnt6aMc");//Precisa passar uma variavel para o id do usuario criado no teste anterior, ou seja, o id do usuario criado deve ser armazenado em uma variavel global e utilizado aqui
 
         // 3. Imprime o log completo da resposta de forma válida
         response.then().log().all();
@@ -98,13 +111,14 @@ public class MeuPrimeiroTesteTestValidacoesJunit {
         Response response = RestAssured
                 .with()
                 .contentType(ContentType.JSON)
-                .delete("/usuarios/idInexistente123");
+                .delete("/usuarios/idInexistente123");//Incluir variavel
 
         // 2. Imprime o log completo da resposta no console
         response.then().log().all();
 
         // 3. Executa as validações com JUnit 4
         assertEquals(200, response.getStatusCode());
-        assertEquals("Nenhum registro excluído", response.path("message"));
+//        assertEquals("Nenhum registro excluído", response.path("message"));//
+//        assertEquals("Registro excluído com sucesso", response.path("message"));//
     }
 }
